@@ -1,9 +1,5 @@
-import Image from "next/image";
+import LandingPage from "../components/Landing/LandingPage";
 
 export default function Home() {
-  return (
-    <div >
-      <h1>Welcome to EcoChamps</h1>
-    </div>
-  );
+  return <LandingPage />;
 }
