@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
+import { SignInButton, SignUpButton } from "@clerk/nextjs";
 
 export default function CTA() {
 	return (
@@ -14,10 +15,14 @@ export default function CTA() {
 							Get started in minutes. Invite students, assign eco-games, track progress.
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="flex flex-col sm:flex-row items-center justify-center gap-3">
-						<Button size="lg" variant="secondary" className="text-slate-900">Sign Up</Button>
-						<Button size="lg" variant="outline" className="bg-transparent text-white border-white">Login</Button>
-					</CardContent>
+						<CardContent className="flex flex-col sm:flex-row items-center justify-center gap-3">
+							<SignUpButton mode="modal">
+								<Button size="lg" variant="secondary" className="text-slate-900">Sign Up</Button>
+							</SignUpButton>
+							<SignInButton mode="modal">
+								<Button size="lg" variant="outline" className="bg-transparent text-white border-white">Login</Button>
+							</SignInButton>
+						</CardContent>
 				</Card>
 			</div>
 		</section>
