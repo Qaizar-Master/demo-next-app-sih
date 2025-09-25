@@ -39,15 +39,25 @@ function Button({
   variant,
   size,
   asChild = false,
+  // Clerk props that may be forwarded by parent wrappers (SignInButton/SignUpButton)
+  // we destructure them here so they are not passed to the DOM element and
+  // avoid React warnings about unknown attributes.
+  afterSignInUrl,
+  afterSignUpUrl,
   ...props
 }) {
   const Comp = asChild ? Slot : "button"
+
+  // Strip any Clerk "after*" props to avoid them getting rendered to DOM
+  const safeProps = Object.fromEntries(
+    Object.entries(props).filter(([key]) => !/^after/i.test(key))
+  );
 
   return (
     <Comp
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
-      {...props} />
+      {...safeProps} />
   );
 }
 
