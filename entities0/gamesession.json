@@ -1,0 +1,42 @@
+{
+  "name": "GameSession",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email of the player"
+    },
+    "game_type": {
+      "type": "string",
+      "enum": [
+        "waste-sorting",
+        "carbon-calculator",
+        "energy-saver",
+        "eco-quiz"
+      ],
+      "description": "Type of game played"
+    },
+    "score": {
+      "type": "number",
+      "description": "Score achieved in the game"
+    },
+    "points_earned": {
+      "type": "number",
+      "description": "Points earned from this session"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "description": "Time spent playing in seconds"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the game was completed"
+    }
+  },
+  "required": [
+    "user_email",
+    "game_type",
+    "score"
+  ]
+}

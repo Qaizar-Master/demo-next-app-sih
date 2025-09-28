@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Trophy, Award, Zap, Gamepad2, Camera, Star } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
+
+
 import AchievementShowcase from "@/components/dashboard/achivementshowcase";
 import ActivityFeed from "@/components/dashboard/activityfeed";
 import QuickActions from "@/components/dashboard/quickactions";
@@ -87,6 +89,7 @@ export default function Dashboard() {
   return (
     <Layout>
     <div className="p-4 md:p-8 space-y-8">
+      
       {/* Welcome Header */}
       <div>
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
@@ -196,6 +199,7 @@ export default function Dashboard() {
           </div>
         </CardContent>
       </Card>
+      
     </div>
     </Layout>
   );

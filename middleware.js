@@ -10,7 +10,8 @@ const isPublicRoute = createRouteMatcher([
 
 export default clerkMiddleware((auth, req) => {
   if (isPublicRoute(req)) return;
-  const { sessionClaims } = auth();
+
+  const { sessionClaims } = auth; // use the passed auth object
   const role = sessionClaims?.publicMetadata?.role;
   const path = req.nextUrl.pathname;
   const skip = req.nextUrl.searchParams.get('skipRole');
@@ -23,7 +24,7 @@ export default clerkMiddleware((auth, req) => {
     return Response.redirect(new URL('/select-role', req.url));
   }
 
-  auth().protect();
+  // No need for auth().protect(); — the middleware already ensures the user is authenticated
 });
 
 export const config = {
@@ -31,6 +32,6 @@ export const config = {
     // Run middleware on all routes except static files and _next
     '/((?!.+\\.[\\w]+$|_next).*)',
     '/',
-    '/(api|trpc)(.*)'
+    '/(api|trpc)(.*)',
   ],
 };

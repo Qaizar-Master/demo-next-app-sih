@@ -1,0 +1,42 @@
+{
+  "name": "ChallengeSubmission",
+  "type": "object",
+  "properties": {
+    "challenge_id": {
+      "type": "string",
+      "description": "ID of the challenge"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the student who submitted"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "URL of submitted photo"
+    },
+    "description": {
+      "type": "string",
+      "description": "Student's description of their action"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Submission status"
+    },
+    "points_awarded": {
+      "type": "number",
+      "default": 0,
+      "description": "Points awarded for this submission"
+    }
+  },
+  "required": [
+    "challenge_id",
+    "user_email",
+    "description"
+  ]
+}
