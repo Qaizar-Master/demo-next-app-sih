@@ -14,6 +14,8 @@ import {
   BookOpen,
   UserIcon,
   User2Icon,
+  Newspaper,
+  TreePine,
 } from "lucide-react";
 import {
   Sidebar,
@@ -66,6 +68,19 @@ const navigationItems = [
     icon: BookOpen,
     color: "text-purple-600",
   },
+  {
+    title: "EcoTree",
+    url: "/eco-tree", // Direct path
+    icon: TreePine,
+    color: "text-purple-600",
+  },
+  {
+    title: "News & Events",
+    url: "/news-events", // Direct path
+    icon: Newspaper,
+    color: "text-purple-600",
+  },
+  
 ];
 
 export default function Layout({ children }) {
@@ -92,7 +107,7 @@ export default function Layout({ children }) {
                 <Leaf className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="font-bold text-xl text-gray-900">EcoLearn</h2>
+                <h2 className="font-bold text-xl text-gray-900">EcoChamps</h2>
                 <p className="text-xs text-green-600 font-medium">
                   Learn • Act • Impact
                 </p>

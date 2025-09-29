@@ -148,10 +148,12 @@ const ClassroomConnect = () => {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <Link href="/dashboard">
+        <span className='outline rounded'>
             <Button variant="ghost" size="sm">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Dashboard
             </Button>
+        </span>
         </Link>
         <motion.div
           className="mb-8"
@@ -169,7 +171,7 @@ const ClassroomConnect = () => {
             onClick={() => setActiveTab('join')}
             className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all duration-300 ${
               activeTab === 'join'
-                ? 'bg-teal-500 text-white shadow-md'
+                ? 'bg-teal-500 text-black shadow-md'
                 : 'text-gray-600 hover:text-teal-500 hover:bg-gray-100'
             }`}
           >
@@ -189,7 +191,7 @@ const ClassroomConnect = () => {
             onClick={() => setActiveTab('browse')}
             className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all duration-300 ${
               activeTab === 'browse'
-                ? 'bg-teal-500 text-white shadow-md'
+                ? 'bg-teal-500 text-black shadow-md'
                 : 'text-gray-600 hover:text-teal-500 hover:bg-gray-100'
             }`}
           >
@@ -225,7 +227,7 @@ const ClassroomConnect = () => {
                     Join
                   </button>
                 </div>
-                <p className="text-gray-400 text-sm mt-2">
+                <p className="text-black text-sm mt-2">
                   Ask your teacher for the class code to join
                 </p>
               </div>
@@ -247,18 +249,18 @@ const ClassroomConnect = () => {
                       <div>
                         <h3 className="text-xl font-bold text-slate mb-1">{classroom.name}</h3>
                         <p className="text-teal-400 font-medium">{classroom.subject}</p>
-                        <p className="text-gray-400 text-sm">by {classroom.teacher}</p>
+                        <p className="text-black text-sm">by {classroom.teacher}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-2xl font-bold text-teal-400">{classroom.myPoints}</p>
-                        <p className="text-sm text-gray-400">points</p>
+                        <p className="text-sm text-black">points</p>
                       </div>
                     </div>
                     
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-2">
-                        <Users className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-400 text-sm">{classroom.students} students</span>
+                        <Users className="w-4 h-4 text-black" />
+                        <span className="text-black text-sm">{classroom.students} students</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Trophy className="w-4 h-4 text-yellow-400" />
@@ -315,18 +317,18 @@ const ClassroomConnect = () => {
                     <div>
                       <h3 className="text-xl font-bold text-slate mb-1">{classroom.name}</h3>
                       <p className="text-teal-400 font-medium">{classroom.subject}</p>
-                      <p className="text-gray-400 text-sm">by {classroom.teacher}</p>
+                      <p className="text-black text-sm">by {classroom.teacher}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-teal-400">{classroom.myPoints}</p>
-                      <p className="text-sm text-gray-400">points</p>
+                      <p className="text-sm text-black">points</p>
                     </div>
                   </div>
                   
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-2">
-                      <Users className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-400 text-sm">{classroom.students} students</span>
+                      <Users className="w-4 h-4 text-black" />
+                      <span className="text-black text-sm">{classroom.students} students</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Trophy className="w-4 h-4 text-yellow-400" />
@@ -359,7 +361,7 @@ const ClassroomConnect = () => {
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-slate">Browse Classes</h2>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black w-5 h-5" />
                 <input
                   type="text"
                   value={searchQuery}
@@ -379,22 +381,22 @@ const ClassroomConnect = () => {
                   <div className="mb-4">
                     <h3 className="text-xl font-bold text-slate-900 mb-1">{classroom.name}</h3>
                     <p className="text-teal-400 font-medium">{classroom.subject}</p>
-                    <p className="text-gray-400 text-sm">by {classroom.teacher}</p>
-                    <p className="text-gray-300 text-sm mt-2">{classroom.description}</p>
+                    <p className="text-black text-sm">by {classroom.teacher}</p>
+                    <p className="text-black text-sm mt-2">{classroom.description}</p>
                   </div>
                   
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-2">
-                      <Users className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-400 text-sm">{classroom.students} students</span>
+                      <Users className="w-4 h-4 text-black" />
+                      <span className="text-black text-sm">{classroom.students} students</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <div className="flex items-center space-x-1">
-                        <span className="text-gray-400 text-sm">Code:</span>
+                        <span className="text-black text-sm">Code:</span>
                         <span className="text-teal-400 font-mono">{classroom.code}</span>
                         <button
                           onClick={() => copyToClipboard(classroom.code)}
-                          className="text-gray-400 hover:text-teal-400 transition-colors duration-200"
+                          className="text-black hover:text-teal-400 transition-colors duration-200"
                         >
                           {copiedCode === classroom.code ? (
                             <Check className="w-4 h-4" />

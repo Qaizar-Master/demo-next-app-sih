@@ -12,8 +12,11 @@ import {
   BookOpen,
   Download,
   Share2,
-  Star
+  Star,
+  ArrowLeft
 } from 'lucide-react'
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 const Resources = () => {
   const [searchQuery, setSearchQuery] = useState('')
@@ -166,14 +169,22 @@ const Resources = () => {
   <div className="min-h-screen bg-white p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
+        <Link href="/dashboard">
+        <span className='outline rounded'>
+            <Button variant="ghost" size="sm">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Dashboard
+            </Button>
+        </span>
+        </Link>
         <motion.div
           className="mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-4xl font-bold text-slate mb-2">Learning Resources</h1>
-          <p className="text-black text-lg">Discover eco-learning videos and educational content</p>
+          <h1 className="text-4xl font-bold text-slate mb-2 flex justify-center">Learning Resources</h1>
+          <p className="text-black text-lg flex justify-center">Discover eco-learning videos and educational content</p>
         </motion.div>
 
         {/* Search and Filters */}
