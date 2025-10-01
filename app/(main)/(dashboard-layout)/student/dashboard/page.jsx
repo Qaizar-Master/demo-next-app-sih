@@ -187,7 +187,7 @@ export default function Dashboard() {
             <Link href="/challenges">
               <Button
                 variant="outline"
-                className="w-full border-white text-white hover:bg-white/20"
+                className="w-full bg-white border-white text-blue-600 hover:bg-blue/20"
               >
                 <Camera className="w-5 h-5 mr-2" />
                 Take Challenges
