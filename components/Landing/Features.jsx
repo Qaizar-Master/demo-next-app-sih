@@ -2,44 +2,71 @@
 
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { Users2, Gamepad2, Trophy } from "lucide-react";
-import { Badge } from "../ui/badge";
-import { Separator } from "../ui/separator";
+import { CheckCircle2, Trophy, Users2 } from "lucide-react";
 
 const fadeIn = {
-	initial: { opacity: 0, y: 16 },
-	animate: { opacity: 1, y: 0 },
-	transition: { duration: 0.6, ease: "easeOut" },
+	initial: { opacity: 0, y: 20 },
+	whileInView: { opacity: 1, y: 0 },
+	viewport: { once: true },
+	transition: { duration: 0.5, ease: "easeOut" },
 };
 
 export default function Features() {
-	const items = [
-		{ icon: Users2, title: "Classroom Connect", desc: "Join classrooms with a simple code, collaborate with peers, and take learning beyond textbooks.", color: "text-sky-600" },
-		{ icon: Gamepad2, title: "Eco-Friendly Games", desc: "Play exciting challenges designed to teach, inspire, and promote sustainability because every game can make a difference.", color: "text-emerald-600" },
-		{ icon: Trophy, title: "Leaderboards & Badges", desc: "Climb the leaderboard, unlock badges, and celebrate your progress as learning turns into achievement.", color: "text-sky-700" },
+	const features = [
+		{
+			icon: CheckCircle2,
+			title: "Track Real Actions",
+			desc: "From recycling to energy saving, log your daily eco-actions. Our AI verifies your impact to ensure every effort counts.",
+			color: "text-emerald-500",
+			bg: "bg-emerald-50"
+		},
+		{
+			icon: Trophy,
+			title: "Earn Digital Rewards",
+			desc: "Transform your eco-points into badges, leaderboard rankings, and (coming soon) real-world discounts with partner brands.",
+			color: "text-amber-500",
+			bg: "bg-amber-50"
+		},
+		{
+			icon: Users2,
+			title: "Community Power",
+			desc: "Create or join communities. Pool your points to unlock massive community goals like planting a local forest.",
+			color: "text-sky-500",
+			bg: "bg-sky-50"
+		}
 	];
 
 	return (
-		<section id="features" className="py-16 sm:py-24">
-			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-				<motion.div {...fadeIn} className="text-center max-w-2xl mx-auto">
-					<div className="flex justify-center">
-					</div>
-					<h2 className="mt-2 text-3xl font-bold tracking-tight">Learning reimagined. Teaching redefined.</h2>
-					<p className="mt-3 text-slate-600">Built for schools and colleges. Designed for fun and outcomes.</p>
-					<Separator className="mt-6" />
+		<section className="py-24 bg-white">
+			<div className="container mx-auto px-4">
+				<motion.div {...fadeIn} className="text-center max-w-2xl mx-auto mb-16">
+					<h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Why EcoChamps?</h2>
+					<p className="text-lg text-slate-600">
+						We bridge the gap between good intentions and measurable impact through gamification and community.
+					</p>
 				</motion.div>
-				<div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-					{items.map((f, i) => (
-						<motion.div key={f.title} {...fadeIn} transition={{ delay: i * 0.05, duration: 0.5 }}>
-							<Card className="h-full hover:shadow-md transition-shadow border-slate-200/70">
+
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+					{features.map((f, i) => (
+						<motion.div
+							key={f.title}
+							initial={{ opacity: 0, y: 20 }}
+							whileInView={{ opacity: 1, y: 0 }}
+							viewport={{ once: true }}
+							transition={{ delay: i * 0.1, duration: 0.5 }}
+						>
+							<Card className="h-full border-none shadow-lg hover:shadow-xl transition-shadow bg-white">
 								<CardHeader>
-									<CardTitle className="flex items-center gap-2 text-lg">
-										<f.icon className={`h-5 w-5 ${f.color}`} />
-										{f.title}
-									</CardTitle>
-									<CardDescription>{f.desc}</CardDescription>
+									<div className={`w-12 h-12 rounded-lg ${f.bg} flex items-center justify-center mb-4`}>
+										<f.icon className={`h-6 w-6 ${f.color}`} />
+									</div>
+									<CardTitle className="text-xl font-bold text-slate-900">{f.title}</CardTitle>
 								</CardHeader>
+								<CardContent>
+									<CardDescription className="text-base text-slate-600 leading-relaxed">
+										{f.desc}
+									</CardDescription>
+								</CardContent>
 							</Card>
 						</motion.div>
 					))}
