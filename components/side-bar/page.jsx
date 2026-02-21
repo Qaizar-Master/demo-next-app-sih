@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
+import { api } from "@/lib/client-api";
 import {
   Home,
   Gamepad2,
@@ -15,6 +16,7 @@ import {
   Newspaper,
   TreePine,
   ChartScatter,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -38,15 +40,22 @@ const navigationItems = [
   { title: "Challenges", url: "/challenges", icon: Target, color: "text-orange-600" },
   { title: "EcoTree", url: "/eco-tree", icon: TreePine, color: "text-purple-600" },
   { title: "Leaderboard", url: "/leaderboard", icon: Trophy, color: "text-yellow-600" },
-  {title: "Monitoring Hub",url: "/monitoring-hub",icon: ChartScatter,color: "text-purple-600", },
+  { title: "Monitoring Hub", url: "/monitoring-hub", icon: ChartScatter, color: "text-purple-600", },
   { title: "Resources", url: "/resources", icon: BookOpen, color: "text-purple-600" },
   { title: "News & Events", url: "/news-events", icon: Newspaper, color: "text-purple-600" },
-  
+
 ];
 
 export default function Layout({ children }) {
   const pathname = usePathname();
   const { user } = useUser();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    api.getProfile()
+      .then((p) => { if (p?.isAdmin) setIsAdmin(true); })
+      .catch(() => { });
+  }, []);
 
   return (
     <SidebarProvider>
@@ -83,8 +92,8 @@ export default function Layout({ children }) {
                         <Link href={item.url} className="flex items-center gap-3 px-4 py-3">
                           <item.icon
                             className={`w-5 h-5 transition-colors ${pathname === item.url
-                                ? item.color
-                                : "text-gray-500 group-hover:text-green-600"
+                              ? item.color
+                              : "text-gray-500 group-hover:text-green-600"
                               }`}
                           />
                           <span className="font-medium">{item.title}</span>
@@ -92,6 +101,25 @@ export default function Layout({ children }) {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
+
+                  {/* ── Admin-only entry ─ */}
+                  {isAdmin && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        asChild
+                        className={`transition-all duration-200 rounded-xl mb-1 group mt-1 border border-dashed border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 ${pathname === "/admin" ? "bg-indigo-100 text-indigo-700 shadow-sm border-indigo-400" : ""
+                          }`}
+                      >
+                        <Link href="/admin" className="flex items-center gap-3 px-4 py-3">
+                          <ShieldCheck
+                            className={`w-5 h-5 transition-colors ${pathname === "/admin" ? "text-indigo-600" : "text-indigo-400 group-hover:text-indigo-600"
+                              }`}
+                          />
+                          <span className="font-medium text-indigo-700">Admin Dashboard</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
