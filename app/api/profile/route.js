@@ -14,44 +14,54 @@ export const dynamic = "force-dynamic";
 
 // GET /api/profile
 export const GET = withAuth(async (req, ctx, userId) => {
-    const profile = await prisma.profile.findUnique({
-        where: { id: userId },
-        include: {
-            progress: true,
-            badges: { include: { badge: true } },
-            memberships: { include: { community: true } },
-        },
-    });
+    try {
+        const profile = await prisma.profile.findUnique({
+            where: { id: userId },
+            include: {
+                progress: true,
+                badges: { include: { badge: true } },
+                memberships: { include: { community: true } },
+            },
+        });
 
-    if (!profile) return err("Profile not found", 404);
-    return ok(profile);
+        if (!profile) return err("Profile not found", 404);
+        return ok(profile);
+    } catch (e) {
+        console.error("[GET /api/profile] Error:", e);
+        return NextResponse.json({ error: "Internal server error", detail: e.message }, { status: 500 });
+    }
 });
 
 // POST /api/profile  — upsert on login
 export async function POST() {
-    const user = await currentUser();
-    if (!user) return err("Unauthorized", 401);
+    try {
+        const user = await currentUser();
+        if (!user) return err("Unauthorized", 401);
 
-    const email = user.emailAddresses[0]?.emailAddress ?? "";
+        const email = user.emailAddresses[0]?.emailAddress ?? "";
 
-    const profile = await prisma.profile.upsert({
-        where: { id: user.id },
-        update: {
-            fullName: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
-            avatarUrl: user.imageUrl,
-            email,
-        },
-        create: {
-            id: user.id,
-            email,
-            fullName: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
-            avatarUrl: user.imageUrl,
-            progress: {
-                create: {}, // seed UserProgress with defaults
+        const profile = await prisma.profile.upsert({
+            where: { id: user.id },
+            update: {
+                fullName: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+                avatarUrl: user.imageUrl,
+                email,
             },
-        },
-        include: { progress: true },
-    });
+            create: {
+                id: user.id,
+                email,
+                fullName: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+                avatarUrl: user.imageUrl,
+                progress: {
+                    create: {},
+                },
+            },
+            include: { progress: true },
+        });
 
-    return ok(profile, 201);
+        return ok(profile, 201);
+    } catch (e) {
+        console.error("[POST /api/profile] Error:", e);
+        return NextResponse.json({ error: "Internal server error", detail: e.message }, { status: 500 });
+    }
 }
