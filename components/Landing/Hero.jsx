@@ -24,7 +24,7 @@ export default function Hero() {
 			</div>
 
 			<div className="container mx-auto px-4 text-center">
-				<motion.div {...fadeIn} className="max-w-4xl mx-auto space-y-8 border-2 border-solid rounded-lg">
+				<motion.div {...fadeIn} className="max-w-4xl mx-auto space-y-8 border-2 border-solid rounded-3xl">
 					<br/>
 					<h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900">
 						Be the <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-sky-600">Change</span>.<br />
