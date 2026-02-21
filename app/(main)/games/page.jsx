@@ -73,19 +73,6 @@ const games = [
     url: "/eco-quiz",
     category: "General Knowledge",
     learning: "Build comprehensive environmental awareness and knowledge"
-  },
-  {
-    id: "eco-city-builder",
-    title: "Eco-City Builder",
-    description: "Build a thriving city while balancing economic growth, citizen happiness, and environmental impact.",
-    icon: Building2,
-    color: "bg-indigo-500",
-    difficulty: "Hard",
-    duration: "10-15 min",
-    points: "100-250",
-    url: "/eco-quiz-builder",
-    category: "Strategy & Simulation",
-    learning: "Understand the trade-offs between development and sustainability in urban planning"
   }
 ];
 

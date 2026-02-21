@@ -7,8 +7,11 @@ import {
     ShieldCheck, Users, CheckCircle, XCircle, Clock, Loader2,
     RefreshCw, Star, Leaf, ChevronDown, ChevronUp,
     AlertTriangle, X, ImageIcon, Circle,
+    ArrowLeft,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
@@ -429,14 +432,22 @@ export default function AdminDashboard() {
     return (
         <div className={`${inter.className} min-h-screen bg-slate-50`}>
             {/* Top bar */}
-            <header className="bg-white border-b border-slate-200 sticky top-0 z-10 text-center">
-                <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-center gap-3">
-                    <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center">
-                        <ShieldCheck className="w-8 h-8 text-white" />
+            <header className="bg-white border-b border-slate-200 sticky top-0 z-10 px-6 py-4">
+                <div className="max-w-3xl mx-auto flex items-center gap-4">
+                    <Link href="/dashboard">
+                        <Button variant="ghost" size="sm" className="outline-2 rounded hover:bg-gray-100 p-2">
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Back To Dashboard
+                        </Button>
+                    </Link>
+                    <div className="flex-1 flex items-center justify-center gap-3">
+                        <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center">
+                            <ShieldCheck className="w-6 h-6 text-white" />
+                        </div>
+                        <h1 className="text-2xl font-semibold text-slate-900 leading-none">Admin Dashboard</h1>
                     </div>
-                    <div>
-                        <h1 className="text-3xl font-semibold text-slate-900 leading-none">Admin Dashboard</h1>
-                    </div>
+                    {/* Empty div for symmetry */}
+                    <div className="w-[72px]" />
                 </div>
             </header>
 

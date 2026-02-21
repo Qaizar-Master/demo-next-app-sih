@@ -112,7 +112,7 @@ const Resources = () => {
 
         {/* Header */}
         <Link href="/dashboard">
-          <Button variant="ghost" size="sm" className="mb-4 text-slate-600 hover:bg-emerald-50">
+          <Button variant="ghost" size="sm" className="mb-4 outline-2 rounded text-slate-600 hover:bg-emerald-50">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>

@@ -6,12 +6,9 @@
  * Populates:
  *   - Challenges (the full catalog)
  *   - Badges (milestone rewards)
- *
- * Add to package.json:
- *   "prisma": { "seed": "node prisma/seed.js" }
  */
 
-import { PrismaClient } from "@prisma/client";
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const challenges = [
@@ -129,60 +126,70 @@ const badges = [
         id: "first-action",
         name: "First Action",
         description: "Complete your very first eco-action",
+        iconUrl: "🌿",
         condition: "complete_1_action",
     },
     {
         id: "eco-starter",
         name: "Eco Starter",
         description: "Complete your first challenge",
+        iconUrl: "🎯",
         condition: "complete_1_challenge",
     },
     {
         id: "streak-7",
         name: "Week Warrior",
         description: "Maintain a 7-day activity streak",
+        iconUrl: "🔥",
         condition: "streak_7",
     },
     {
         id: "streak-30",
         name: "Monthly Champion",
         description: "Maintain a 30-day activity streak",
+        iconUrl: "🏆",
         condition: "streak_30",
     },
     {
         id: "points-100",
         name: "Century",
         description: "Earn your first 100 eco-points",
+        iconUrl: "⭐",
         condition: "total_points_100",
     },
     {
         id: "points-500",
         name: "Community Leader Candidate",
         description: "Earn 500 eco-points — unlocks community creation",
+        iconUrl: "🌍",
         condition: "total_points_500",
     },
     {
         id: "points-1000",
         name: "Eco Champion",
         description: "Earn 1,000 eco-points",
+        iconUrl: "🦸",
         condition: "total_points_1000",
     },
     {
         id: "community-joiner",
         name: "Community Joiner",
         description: "Join your first community",
+        iconUrl: "🤝",
         condition: "join_1_community",
     },
     {
         id: "community-creator",
         name: "Community Founder",
         description: "Create and lead a community",
+        iconUrl: "🏘️",
         condition: "create_community",
     },
     {
         id: "action-verified",
         name: "Verified Hero",
         description: "Have an eco-action verified by AI",
+        iconUrl: "✅",
         condition: "ai_approved_action",
     },
 ];

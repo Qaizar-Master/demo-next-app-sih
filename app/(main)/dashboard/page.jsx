@@ -2,10 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Trophy, Award, Zap, Gamepad2, Camera, Star } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  Trophy, Award, Zap, Gamepad2, Camera, Star,
+  TrendingUp, Flame, Target, ArrowRight, Sparkles,
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 
 import AchievementShowcase from "@/components/dashboard/achivementshowcase";
 import ActivityFeed from "@/components/dashboard/activityfeed";
@@ -14,7 +17,7 @@ import StatsCard from "@/components/dashboard/statscard";
 import Layout from "@/components/side-bar/page";
 import { api } from "@/lib/client-api";
 
-// Level thresholds — each entry is [minPoints, levelNumber, title]
+// ─── Level system ─────────────────────────────────────────────────────────────
 const LEVEL_TIERS = [
   [0, 1, "Seedling"],
   [100, 2, "Sprout"],
@@ -43,6 +46,26 @@ function getLevel(totalPoints) {
   return { level: tier[1], title: tier[2], progressPct, ptsToNext, nextTier };
 }
 
+// ─── Loading skeleton ─────────────────────────────────────────────────────────
+function Skeleton() {
+  return (
+    <div className="p-6 md:p-10 space-y-8 animate-pulse">
+      <div className="h-10 w-72 bg-gray-100 rounded-xl" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="h-32 bg-gray-100 rounded-2xl" />
+        ))}
+      </div>
+      <div className="h-28 bg-gray-100 rounded-2xl" />
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="h-80 bg-gray-100 rounded-2xl" />
+        <div className="lg:col-span-2 h-80 bg-gray-100 rounded-2xl" />
+      </div>
+    </div>
+  );
+}
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const [profile, setProfile] = useState(null);
   const [recentSessions, setRecentSessions] = useState([]);
@@ -53,15 +76,12 @@ export default function Dashboard() {
     const load = async () => {
       setIsLoading(true);
       try {
-        // Upsert profile on every page load (safe – idempotent)
         await api.syncProfile();
-
         const [profileData, sessionsData, badgesData] = await Promise.all([
           api.getProfile(),
-          api.getGameSessions(5),
+          api.getGameSessions(3),
           api.getBadges(),
         ]);
-
         setProfile(profileData);
         setRecentSessions(sessionsData);
         setBadges(badgesData.filter((b) => b.earned));
@@ -78,120 +98,139 @@ export default function Dashboard() {
   const streak = profile?.progress?.currentStreak ?? 0;
 
   if (isLoading) {
-    return (
-      <div className="p-6 space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-64 mb-4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    return <Layout><Skeleton /></Layout>;
   }
+
+  const firstName = profile?.fullName?.split(" ")[0] || "Eco Warrior";
 
   return (
     <Layout>
-      <div className="p-4 md:p-8 space-y-8">
+      <div className="min-h-screen bg-gray-50/50">
+        <div className="p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto">
 
-        {/* Welcome Header */}
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Welcome back, {profile?.fullName?.split(" ")[0] || "Eco Warrior"}! 🌱
-          </h1>
-          <p className="text-lg text-gray-600">
-            Ready to make a positive impact on our planet today?
-          </p>
-        </div>
+          {/* ── Welcome header ─────────────────────────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex items-start justify-between flex-wrap gap-4"
+          >
+            <div>
+              <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
+                Hey, {firstName}! 👋
+              </h1>
+              <p className="text-gray-400 mt-1 font-medium">
+                {streak > 0
+                  ? `🔥 ${streak}-day streak — keep it going!`
+                  : "Ready to start your eco journey today?"}
+              </p>
+            </div>
+            <Link href="/challenges">
+              <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white text-xs font-black uppercase tracking-widest rounded-full hover:bg-emerald-500 hover:scale-105 transition-all shadow-lg shadow-emerald-200">
+                <Target className="w-3.5 h-3.5" /> Take a Challenge
+              </button>
+            </Link>
+          </motion.div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatsCard
-            title="Total Points"
-            value={totalPoints}
-            icon={Star}
-            color="text-yellow-600"
-            bgColor="bg-yellow-100"
-          />
-          <StatsCard
-            title="Current Level"
-            value={level}
-            icon={Trophy}
-            color="text-green-600"
-            bgColor="bg-green-100"
-          />
-          <StatsCard
-            title="Badges Earned"
-            value={badges.length}
-            icon={Award}
-            color="text-purple-600"
-            bgColor="bg-purple-100"
-          />
-          <StatsCard
-            title="Daily Streak"
-            value={streak}
-            icon={Zap}
-            color="text-orange-600"
-            bgColor="bg-orange-100"
-          />
-        </div>
+          {/* ── Stats cards ────────────────────────────────────────────────── */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+            <StatsCard index={0} title="Total Points" value={totalPoints} icon={Star} color="text-amber-500" bgColor="bg-amber-50" subtitle="Lifetime earned" />
+            <StatsCard index={1} title="Current Level" value={`Lv ${level}`} icon={TrendingUp} color="text-emerald-600" bgColor="bg-emerald-50" subtitle={levelTitle} />
+            <StatsCard index={2} title="Badges Earned" value={badges.length} icon={Award} color="text-purple-600" bgColor="bg-purple-50" subtitle={`of 5 total`} />
+            <StatsCard index={3} title="Day Streak" value={streak} icon={Flame} color="text-orange-500" bgColor="bg-orange-50" subtitle={streak > 0 ? "Active 🔥" : "Start one!"} />
+          </div>
 
-        {/* Level Progress */}
-        <Card className="bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-xl">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-1">
-              <div>
-                <h3 className="text-xl font-bold">Level {level} — {levelTitle}</h3>
-                <p className="text-green-100 text-sm">
-                  {ptsToNext > 0 ? `${ptsToNext} pts to next level` : "Max level reached! 🏆"}
-                </p>
+          {/* ── Level progress bar ─────────────────────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.5 }}
+            className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-6 overflow-hidden"
+          >
+            {/* Decorative glow */}
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-50/60 via-white to-blue-50/40 pointer-events-none" />
+
+            <div className="relative flex items-center justify-between flex-wrap gap-4 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-md shadow-emerald-200">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-black text-gray-900 text-lg leading-none">
+                    Level {level} — <span className="text-emerald-600">{levelTitle}</span>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {ptsToNext > 0
+                      ? `${ptsToNext.toLocaleString()} pts to reach Level ${level + 1}`
+                      : "🏆 Maximum level reached!"}
+                  </p>
+                </div>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold">{totalPoints.toLocaleString()}</div>
-                <div className="text-sm text-green-100">Total Points</div>
+                <p className="text-3xl font-black text-gray-900">{totalPoints.toLocaleString()}</p>
+                <p className="text-xs text-gray-400 font-medium uppercase tracking-widest">Total Points</p>
               </div>
             </div>
-            <Progress value={progressPct} className="mt-3 bg-green-400/30 [&>*]:bg-white" />
-          </CardContent>
-        </Card>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <QuickActions />
-          </div>
-          <div className="lg:col-span-2">
-            <ActivityFeed recentSessions={recentSessions} />
-          </div>
-        </div>
-
-        <AchievementShowcase badges={badges} />
-
-        {/* CTA */}
-        <Card className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-xl">
-          <CardContent className="p-8 text-center">
-            <h2 className="text-2xl font-bold mb-4">Ready for Your Next Challenge?</h2>
-            <p className="text-blue-100 mb-6">
-              Complete games and real-world challenges to earn more points and badges!
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/games">
-                <Button className="w-full bg-white text-blue-600 hover:bg-blue-50">
-                  <Gamepad2 className="w-5 h-5 mr-2" />
-                  Play Games
-                </Button>
-              </Link>
-              <Link href="/challenges">
-                <Button variant="outline" className="w-full border-white text-white hover:bg-white/20">
-                  <Camera className="w-5 h-5 mr-2" />
-                  Take Challenges
-                </Button>
-              </Link>
+            <div className="relative">
+              <Progress
+                value={progressPct}
+                className="h-3 bg-gray-100 [&>*]:bg-gradient-to-r [&>*]:from-emerald-500 [&>*]:to-green-400 [&>*]:rounded-full"
+              />
+              <span className="absolute right-0 -top-5 text-[10px] font-black text-emerald-600">
+                {progressPct}%
+              </span>
             </div>
-          </CardContent>
-        </Card>
+          </motion.div>
 
+          {/* ── Quick actions + Activity feed ──────────────────────────────── */}
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1">
+              <QuickActions />
+            </div>
+            <div className="lg:col-span-2">
+              <ActivityFeed recentSessions={recentSessions} />
+            </div>
+          </div>
+
+          {/* ── Achievements ───────────────────────────────────────────────── */}
+          <AchievementShowcase badges={badges} />
+
+          {/* ── Bottom CTA ─────────────────────────────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="relative bg-gradient-to-br from-emerald-600 to-green-700 rounded-2xl overflow-hidden p-8 text-white shadow-xl shadow-emerald-200"
+          >
+            {/* Background circles */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+
+            <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.3em] text-emerald-200 mb-2">Next Mission</p>
+                <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-1">Ready for your next challenge?</h2>
+                <p className="text-emerald-100 text-sm max-w-sm">
+                  Complete eco-actions, earn verified points, and climb the leaderboard!
+                </p>
+              </div>
+              <div className="flex gap-3 shrink-0">
+                <Link href="/games">
+                  <button className="flex items-center gap-2 px-6 py-3 bg-white text-emerald-700 text-xs font-black uppercase tracking-widest rounded-full hover:bg-emerald-50 transition-all hover:scale-105 shadow-lg">
+                    <Gamepad2 className="w-4 h-4" /> Play Games
+                  </button>
+                </Link>
+                <Link href="/challenges">
+                  <button className="flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur border border-white/30 text-white text-xs font-black uppercase tracking-widest rounded-full hover:bg-white/30 transition-all hover:scale-105">
+                    <Camera className="w-4 h-4" /> Challenges
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+
+        </div>
       </div>
     </Layout>
   );
