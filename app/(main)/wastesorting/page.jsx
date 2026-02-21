@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { User, UserProgress, GameSession } from "@/entities";
+import { api } from "@/lib/client-api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -79,7 +79,6 @@ const bins = [
 ];
 
 export default function WasteSorting() {
-  const [user, setUser] = useState(null);
   const [gameState, setGameState] = useState('ready');
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
@@ -91,72 +90,21 @@ export default function WasteSorting() {
   const timerRef = useRef(null);
   const router = useRouter(); // FIX 2: Initialize the router
 
-  const loadUser = async () => {
-    try {
-      const currentUser = await User.me();
-      setUser(currentUser);
-    } catch (error) {
-      console.error('Error loading user:', error);
-    }
-  };
-
   const endGame = useCallback(async () => {
     setGameState('gameOver');
-    
     const accuracy = totalItems > 0 ? Math.round((correctItems / totalItems) * 100) : 0;
     const finalScore = score;
-    let finalLevel = 1;
-
     try {
-      await GameSession.create({
-        user_email: user?.email,
-        game_type: "waste-sorting",
-        score: finalScore,
-        points_earned: finalScore,
-        duration_seconds: 30 - timeLeft,
-        completed: true
-      });
-
-      if (user?.email) {
-        const progressList = await UserProgress.filter({ user_email: user.email });
-        if (progressList.length > 0) {
-          const progress = progressList[0];
-          const newTotalPoints = (progress.total_points || 0) + finalScore;
-          const newLevel = Math.floor(newTotalPoints / 100) + 1;
-          finalLevel = newLevel; // Store for modal
-          let newBadges = [...(progress.badges || [])];
-
-          if (!newBadges.includes("first-game") && newTotalPoints >= 10) {
-            newBadges.push("first-game");
-          }
-          if (!newBadges.includes("waste-warrior") && accuracy >= 80 && totalItems >= 10) {
-            newBadges.push("waste-warrior");
-          }
-
-          await UserProgress.update(progress.id, {
-            total_points: newTotalPoints,
-            level: newLevel,
-            badges: newBadges,
-            completed_games: [...(progress.completed_games || []), "waste-sorting"]
-          });
-        }
-      }
-
-      setGameOverData({
-        score: finalScore,
-        accuracy,
-        correctItems,
-        totalItems,
-        newLevel: finalLevel // FIX 3: Use the consistently calculated final level
-      });
-      
+      const session = await api.createGameSession("WASTE_SORTING");
+      await api.completeGameSession(session.id, finalScore, "COMPLETED");
+      setGameOverData({ score: finalScore, accuracy, correctItems, totalItems, newLevel: 1 });
     } catch (error) {
       console.error('Error saving game results:', error);
+      setGameOverData({ score: finalScore, accuracy, correctItems, totalItems, newLevel: 1 });
     }
-  }, [user, totalItems, correctItems, score, timeLeft]);
+  }, [totalItems, correctItems, score]);
 
   useEffect(() => {
-    loadUser();
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
@@ -174,7 +122,7 @@ export default function WasteSorting() {
         });
       }, 1000);
     } else if (timerRef.current) {
-        clearInterval(timerRef.current);
+      clearInterval(timerRef.current);
     }
 
     return () => {
@@ -210,7 +158,7 @@ export default function WasteSorting() {
 
     const isCorrect = currentItem.type === binType;
     setTotalItems(prev => prev + 1);
-    
+
     if (isCorrect) {
       const streakMultiplier = Math.floor(correctStreak / 3) + 1;
       const pointsEarned = 10 * streakMultiplier;
@@ -247,9 +195,9 @@ export default function WasteSorting() {
             </Badge>
           </div>
         </div>
-        
+
         {/* The rest of the JSX remains largely the same... */}
-        
+
         {/* Game Stats */}
         {gameState !== 'ready' && (
           <div className="grid grid-cols-3 gap-4 mb-6">
@@ -303,12 +251,12 @@ export default function WasteSorting() {
         </div>
 
         {/* Game Over Modal */}
-        <GameOverModal 
+        <GameOverModal
           isOpen={gameState === 'gameOver'}
           gameData={gameOverData}
           onPlayAgain={startGame}
           // FIX 2: Use router.push for smooth navigation
-          onBackToGames={() => router.push('/games')} 
+          onBackToGames={() => router.push('/games')}
         />
       </div>
     </div>

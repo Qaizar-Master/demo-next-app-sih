@@ -1,0 +1,294 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+// =================================================================
+// USERS
+// id maps directly to the Clerk User ID (e.g. user_2abc...)
+// =================================================================
+model Profile {
+  id          String   @id               // Clerk User ID
+  email       String   @unique
+  fullName    String?
+  username    String?  @unique
+  avatarUrl   String?
+  bio         String?
+  role        Role     @default(INDIVIDUAL)
+  isAdmin     Boolean  @default(false)
+  totalPoints Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  progress           UserProgress?
+  gameSessions       GameSession[]
+  challengeProgress  ChallengeProgress[]
+  badges             UserBadge[]
+  actions            Action[]
+  communitiesCreated Community[]         @relation("CommunityCreator")
+  memberships        CommunityMember[]
+  communityRequests  CommunityRequest[]
+  leaderboardEntries LeaderboardEntry[]
+}
+
+enum Role {
+  INDIVIDUAL
+  COMMUNITY_LEADER
+  ADMIN
+}
+
+// =================================================================
+// GAMIFICATION — User Progress & Streaks
+// =================================================================
+model UserProgress {
+  userId        String   @id
+  level         Int      @default(1)
+  currentStreak Int      @default(0)
+  longestStreak Int      @default(0)
+  lastActiveAt  DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// =================================================================
+// GAMIFICATION — Badges
+// =================================================================
+model Badge {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  iconUrl     String?
+  condition   String                        // e.g. "complete_10_challenges"
+  createdAt   DateTime @default(now())
+
+  awardedTo UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(uuid())
+  userId    String
+  badgeId   String
+  awardedAt DateTime @default(now())
+
+  user  Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge   @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+}
+
+// =================================================================
+// GAMIFICATION — Challenges
+// =================================================================
+model Challenge {
+  id          String      @id               // e.g. "daily-energy-saver"
+  title       String
+  description String
+  category    String                        // Energy, Waste, Carbon, Water, etc.
+  difficulty  Difficulty
+  points      Int
+  duration    String                        // "1 day", "7 days", "30 days"
+  iconName    String?                       // lucide icon name e.g. "Zap"
+  colorClass  String?                       // tailwind class e.g. "bg-yellow-500"
+  maxProgress Int
+  actions     String[]                      // Array of action descriptions
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+
+  gameSessions      GameSession[]
+  userProgress      ChallengeProgress[]
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+// Per-user progress on a specific challenge
+model ChallengeProgress {
+  id          String          @id @default(uuid())
+  userId      String
+  challengeId String
+  status      ChallengeStatus @default(NOT_STARTED)
+  progress    Int             @default(0)
+  startedAt   DateTime?
+  completedAt DateTime?
+  updatedAt   DateTime        @updatedAt
+
+  user      Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge Challenge @relation(fields: [challengeId], references: [id])
+
+  @@unique([userId, challengeId])
+}
+
+enum ChallengeStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+// =================================================================
+// GAMIFICATION — Game Sessions
+// An individual activity log: starting a challenge, quiz, mini-game, etc.
+// =================================================================
+model GameSession {
+  id          String        @id @default(uuid())
+  userId      String
+  challengeId String?
+  type        GameType
+  status      SessionStatus @default(ACTIVE)
+  progress    Int           @default(0)
+  score       Int?
+  createdAt   DateTime      @default(now())
+  completedAt DateTime?
+
+  user      Profile    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge Challenge? @relation(fields: [challengeId], references: [id])
+}
+
+enum GameType {
+  CHALLENGE
+  QUIZ
+  ECO_TREE
+  WASTE_SORTING
+  ENERGY_SAVER
+  CARBON_CALC
+}
+
+enum SessionStatus {
+  ACTIVE
+  COMPLETED
+  ABANDONED
+}
+
+// =================================================================
+// LEADERBOARD
+// =================================================================
+model LeaderboardEntry {
+  id          String   @id @default(uuid())
+  userId      String
+  communityId String?
+  period      String                        // "global", "monthly", "weekly"
+  points      Int      @default(0)
+  rank        Int?
+  updatedAt   DateTime @updatedAt
+
+  user      Profile    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community? @relation(fields: [communityId], references: [id])
+
+  @@unique([userId, communityId, period])
+}
+
+// =================================================================
+// COMMUNITY
+// =================================================================
+model Community {
+  id          String          @id @default(uuid())
+  name        String          @unique
+  description String?
+  joinCode    String          @unique         // short random code to join
+  imageUrl    String?
+  totalPoints Int             @default(0)
+  status      CommunityStatus @default(PENDING)
+  reviewedAt  DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  createdById String
+  creator     Profile @relation("CommunityCreator", fields: [createdById], references: [id])
+
+  members          CommunityMember[]
+  actions          Action[]
+  leaderboardEntry LeaderboardEntry[]
+}
+
+enum CommunityStatus {
+  PENDING   // Awaiting admin approval
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+model CommunityMember {
+  id          String      @id @default(uuid())
+  userId      String
+  communityId String
+  role        MemberRole  @default(MEMBER)
+  active      Boolean     @default(true)
+  joinedAt    DateTime    @default(now())
+
+  user      Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, communityId])
+}
+
+enum MemberRole {
+  MEMBER
+  MODERATOR
+  LEADER       // The person who created / leads the community
+}
+
+// Request submitted by an individual to create a community.
+// Approved by admin directly (via Prisma Studio / Supabase Dashboard).
+// On approval, a webhook or trigger upgrades Profile.role to COMMUNITY_LEADER.
+model CommunityRequest {
+  id            String        @id @default(uuid())
+  userId        String
+  communityName String
+  description   String?
+  minPoints     Int           @default(500)  // threshold at time of request
+  status        RequestStatus @default(PENDING)
+  adminNote     String?
+  reviewedAt    DateTime?
+  createdAt     DateTime      @default(now())
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// =================================================================
+// ECO ACTIONS — Real-world environmental actions submitted by users.
+// Images verified by AI before points are awarded.
+// =================================================================
+model Action {
+  id            String       @id @default(uuid())
+  userId        String
+  communityId   String?
+  title         String?                        // user-provided short title
+  category      String                         // e.g. "waste", "energy", "water"
+  beforeImage   String                         // URL or storage path
+  afterImage    String                         // URL or storage path
+  latitude      Float?
+  longitude     Float?
+  status        ActionStatus @default(PENDING)
+  aiConfidence  Float?                         // 0.0–1.0 AI verification score
+  pointsAwarded Int          @default(0)
+  adminNote     String?
+  createdAt     DateTime     @default(now())
+  reviewedAt    DateTime?
+
+  user      Profile    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community? @relation(fields: [communityId], references: [id])
+}
+
+enum ActionStatus {
+  PENDING      // Submitted, awaiting AI/Admin review
+  AI_APPROVED  // Auto-approved by AI (high confidence)
+  AI_REJECTED  // Auto-rejected by AI (low confidence)
+  APPROVED     // Manually approved by admin
+  REJECTED     // Manually rejected by admin
+}

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { User, UserProgress, GameSession } from "@/entities";
+import { api } from "@/lib/client-api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Building2 } from "lucide-react";
@@ -26,24 +26,12 @@ const TARGET_POPULATION = 100;
 const MAX_POLLUTION = 100;
 
 export default function EcoCityBuilder() {
-  const [user, setUser] = useState(null);
-  const [gameState, setGameState] = useState('intro'); // intro, playing, won, lost
+  const [gameState, setGameState] = useState('intro');
   const [grid, setGrid] = useState(Array(GRID_SIZE * GRID_SIZE).fill(null));
   const [stats, setStats] = useState(INITIAL_STATS);
   const [selectedBuilding, setSelectedBuilding] = useState(null);
 
-  useEffect(() => {
-    loadUser();
-  }, []);
-
-  const loadUser = async () => {
-    try {
-      const currentUser = await User.me();
-      setUser(currentUser);
-    } catch (error) {
-      console.error('Error loading user:', error);
-    }
-  };
+  // no user state needed — api routes use Clerk session
 
   const startGame = () => {
     setGrid(Array(GRID_SIZE * GRID_SIZE).fill(null));
@@ -67,9 +55,9 @@ export default function EcoCityBuilder() {
     newStats.happiness += selectedBuilding.effects.happiness;
     newStats.pollution += selectedBuilding.effects.pollution;
     newStats.energy += selectedBuilding.effects.energy;
-    
+
     // Adjacency bonuses/penalties could be calculated here
-    
+
     setStats(newStats);
     setSelectedBuilding(null);
     checkGameEnd(newStats);
@@ -85,25 +73,12 @@ export default function EcoCityBuilder() {
 
   const endGame = async (result, finalStats) => {
     setGameState(result);
-    
-    const finalScore = finalStats.population * (finalStats.happiness / 50) - finalStats.pollution;
-    
+    const finalScore = Math.max(0, Math.round(
+      finalStats.population * (finalStats.happiness / 50) - finalStats.pollution
+    ));
     try {
-      await GameSession.create({
-        user_email: user.email,
-        game_type: "eco-city-builder",
-        score: Math.max(0, Math.round(finalScore)),
-        points_earned: Math.max(0, Math.round(finalScore)),
-        duration_seconds: 120, // Placeholder
-        completed: true,
-      });
-
-      const progressList = await UserProgress.filter({ user_email: user.email });
-      if (progressList.length > 0) {
-        const progress = progressList[0];
-        const newTotalPoints = (progress.total_points || 0) + Math.max(0, Math.round(finalScore));
-        await UserProgress.update(progress.id, { total_points: newTotalPoints });
-      }
+      const session = await api.createGameSession("CHALLENGE");
+      await api.completeGameSession(session.id, finalScore, result === 'won' ? "COMPLETED" : "ABANDONED");
     } catch (error) {
       console.error('Error saving game results:', error);
     }
@@ -139,10 +114,10 @@ export default function EcoCityBuilder() {
               <Card className="shadow-xl">
                 <CardContent className="p-4 md:p-6">
                   <StatsDisplay stats={stats} targetPopulation={TARGET_POPULATION} maxPollution={MAX_POLLUTION} />
-                  
+
                   <div className="grid lg:grid-cols-3 gap-6 mt-6">
                     <div className="lg:col-span-2">
-                      <GameGrid 
+                      <GameGrid
                         grid={grid}
                         onCellClick={handlePlaceBuilding}
                         selectedBuilding={selectedBuilding}
@@ -150,7 +125,7 @@ export default function EcoCityBuilder() {
                       />
                     </div>
                     <div className="lg:col-span-1">
-                      <BuildingMenu 
+                      <BuildingMenu
                         selectedBuilding={selectedBuilding}
                         onSelectBuilding={setSelectedBuilding}
                         budget={stats.budget}
@@ -163,7 +138,7 @@ export default function EcoCityBuilder() {
           )}
         </AnimatePresence>
 
-        <WinLoseModal 
+        <WinLoseModal
           isOpen={gameState === 'won' || gameState === 'lost'}
           status={gameState}
           stats={stats}

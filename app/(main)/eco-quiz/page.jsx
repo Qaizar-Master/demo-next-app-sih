@@ -1,14 +1,14 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { User, UserProgress, GameSession } from "@/entities";
+import React, { useState, useEffect, useRef } from "react";
+import { api } from "@/lib/client-api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { 
-  ArrowLeft, 
-  Brain, 
-  CheckCircle, 
+import {
+  ArrowLeft,
+  Brain,
+  CheckCircle,
   XCircle,
   Lightbulb,
   Timer
@@ -108,12 +108,7 @@ export default function EcoQuiz() {
   }, []);
 
   const loadUser = async () => {
-    try {
-      const currentUser = await User.me();
-      setUser(currentUser);
-    } catch (error) {
-      console.error('Error loading user:', error);
-    }
+    // no-op — api routes handle auth internally
   };
 
   const startGame = () => {
@@ -128,23 +123,23 @@ export default function EcoQuiz() {
 
   const handleAnswer = (answerIndex) => {
     if (selectedAnswer !== null) return; // Already answered
-    
+
     setSelectedAnswer(answerIndex);
     const isCorrect = answerIndex === questions[currentQuestion].correct;
     const points = isCorrect ? 10 : 0;
-    
+
     if (isCorrect) {
       setScore(prev => prev + points);
       setCorrectAnswers(prev => prev + 1);
     }
-    
+
     setAnswers(prev => [...prev, {
       question: questions[currentQuestion],
       selected: answerIndex,
       correct: isCorrect,
       points
     }]);
-    
+
     setShowExplanation(true);
   };
 
@@ -160,55 +155,15 @@ export default function EcoQuiz() {
 
   const endGame = async () => {
     setGameState('results');
-    
     const accuracy = Math.round((correctAnswers / questions.length) * 100);
     const finalScore = score;
-    
     try {
-      // Save game session
-      await GameSession.create({
-        user_email: user.email,
-        game_type: "eco-quiz",
-        score: finalScore,
-        points_earned: finalScore,
-        duration_seconds: currentQuestion * 15, // estimated time
-        completed: true
-      });
-
-      // Update user progress
-      const progressList = await UserProgress.filter({ user_email: user.email });
-      if (progressList.length > 0) {
-        const progress = progressList[0];
-        const newTotalPoints = (progress.total_points || 0) + finalScore;
-        const newLevel = Math.floor(newTotalPoints / 100) + 1;
-        let newBadges = [...(progress.badges || [])];
-
-        // Award badges
-        if (!newBadges.includes("first-game") && newTotalPoints >= 10) {
-          newBadges.push("first-game");
-        }
-        if (!newBadges.includes("eco-champion") && accuracy >= 80) {
-          newBadges.push("eco-champion");
-        }
-
-        await UserProgress.update(progress.id, {
-          total_points: newTotalPoints,
-          level: newLevel,
-          badges: newBadges,
-          completed_games: [...(progress.completed_games || []), "eco-quiz"]
-        });
-      }
-
-      setGameOverData({
-        score: finalScore,
-        accuracy,
-        correctAnswers,
-        totalQuestions: questions.length,
-        answers
-      });
-      
+      const session = await api.createGameSession("ECO_QUIZ");
+      await api.completeGameSession(session.id, finalScore, "COMPLETED");
+      setGameOverData({ score: finalScore, accuracy, correctAnswers, totalQuestions: questions.length, answers });
     } catch (error) {
       console.error('Error saving game results:', error);
+      setGameOverData({ score: finalScore, accuracy, correctAnswers, totalQuestions: questions.length, answers });
     }
   };
 
@@ -225,19 +180,19 @@ export default function EcoQuiz() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
 
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Games
-            </Button>
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Games
+          </Button>
 
-          
+
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 justify-center">
               <Brain className="w-7 h-7 text-purple-600" />
               Eco Knowledge Challenge
             </h1>
           </div>
-          
+
           <div className="text-right">
             <Badge variant="outline" className="text-lg px-4 py-2">
               <Brain className="w-5 h-5 mr-2" />
@@ -329,7 +284,7 @@ export default function EcoQuiz() {
                   <p className="text-lg text-gray-600 mb-6">
                     You scored {gameOverData.correctAnswers} out of {gameOverData.totalQuestions} questions correctly!
                   </p>
-                  
+
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <div className="p-4 bg-purple-50 rounded-lg">
                       <div className="text-3xl font-bold text-purple-600">
@@ -349,7 +304,7 @@ export default function EcoQuiz() {
                     <Button onClick={restartGame} className="bg-purple-600 hover:bg-purple-700">
                       Try Again
                     </Button>
-                      <Link href= "/games">
+                    <Link href="/games">
                       <Button variant="outline">Back to Games</Button>
                     </Link>
                   </div>

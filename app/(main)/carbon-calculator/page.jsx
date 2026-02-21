@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { User, UserProgress, GameSession } from "@/entities"; // Corrected import
+import { api } from "@/lib/client-api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,11 +14,11 @@ import QuestionCard from "@/components/games/quickcard";
 import CarbonVisualization from "@/components/games/carbonvisu";
 
 const scenarios = [
-  { id: 1, title: "Morning Commute", icon: Car, choices: [ { text: "Walk or bike", emissions: 0, points: 20 }, { text: "Public transport", emissions: 2.5, points: 15 }, { text: "Carpool", emissions: 5, points: 10 }, { text: "Drive alone", emissions: 10, points: 0 } ] },
-  { id: 2, title: "Breakfast Choice", icon: Utensils, choices: [ { text: "Plant-based meal", emissions: 0.5, points: 20 }, { text: "Cereal with milk", emissions: 1.5, points: 15 }, { text: "Eggs and toast", emissions: 2.5, points: 10 }, { text: "Bacon and eggs", emissions: 4, points: 5 } ] },
-  { id: 3, title: "Energy at Home", icon: Home, choices: [ { text: "Use renewable energy", emissions: 1, points: 20 }, { text: "Turn off unused devices", emissions: 3, points: 15 }, { text: "Use energy normally", emissions: 6, points: 10 }, { text: "Leave everything on", emissions: 12, points: 0 } ] },
-  { id: 4, title: "Lunch Decision", icon: Utensils, choices: [ { text: "Homemade vegetarian meal", emissions: 1, points: 20 }, { text: "Local restaurant", emissions: 2.5, points: 15 }, { text: "Fast food", emissions: 4, points: 10 }, { text: "Meat-heavy takeout", emissions: 6, points: 5 } ] },
-  { id: 5, title: "Weekend Plans", icon: Plane, choices: [ { text: "Local outdoor activities", emissions: 1, points: 20 }, { text: "Visit nearby city", emissions: 5, points: 15 }, { text: "Shopping mall trip", emissions: 8, points: 10 }, { text: "Fly to another city", emissions: 50, points: 0 } ] }
+  { id: 1, title: "Morning Commute", icon: Car, choices: [{ text: "Walk or bike", emissions: 0, points: 20 }, { text: "Public transport", emissions: 2.5, points: 15 }, { text: "Carpool", emissions: 5, points: 10 }, { text: "Drive alone", emissions: 10, points: 0 }] },
+  { id: 2, title: "Breakfast Choice", icon: Utensils, choices: [{ text: "Plant-based meal", emissions: 0.5, points: 20 }, { text: "Cereal with milk", emissions: 1.5, points: 15 }, { text: "Eggs and toast", emissions: 2.5, points: 10 }, { text: "Bacon and eggs", emissions: 4, points: 5 }] },
+  { id: 3, title: "Energy at Home", icon: Home, choices: [{ text: "Use renewable energy", emissions: 1, points: 20 }, { text: "Turn off unused devices", emissions: 3, points: 15 }, { text: "Use energy normally", emissions: 6, points: 10 }, { text: "Leave everything on", emissions: 12, points: 0 }] },
+  { id: 4, title: "Lunch Decision", icon: Utensils, choices: [{ text: "Homemade vegetarian meal", emissions: 1, points: 20 }, { text: "Local restaurant", emissions: 2.5, points: 15 }, { text: "Fast food", emissions: 4, points: 10 }, { text: "Meat-heavy takeout", emissions: 6, points: 5 }] },
+  { id: 5, title: "Weekend Plans", icon: Plane, choices: [{ text: "Local outdoor activities", emissions: 1, points: 20 }, { text: "Visit nearby city", emissions: 5, points: 15 }, { text: "Shopping mall trip", emissions: 8, points: 10 }, { text: "Fly to another city", emissions: 50, points: 0 }] }
 ];
 
 export default function CarbonCalculator() {
@@ -31,15 +31,7 @@ export default function CarbonCalculator() {
   const [gameOverData, setGameOverData] = useState(null);
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const currentUser = await User.me();
-        setUser(currentUser);
-      } catch (error) {
-        console.error('Error loading user:', error);
-      }
-    };
-    loadUser();
+    // profile is synced via Clerk webhook — no manual User.me() needed
   }, []);
 
   const startGame = () => {
@@ -61,53 +53,27 @@ export default function CarbonCalculator() {
       setTimeout(() => setGameState('results'), 1000);
     }
   };
-  
+
   const saveGameResults = useCallback(async () => {
     try {
-      await GameSession.create({
-        user_email: user?.email,
-        game_type: "carbon-calculator",
-        score: totalPoints,
-        points_earned: totalPoints,
-        duration_seconds: choices.length * 10,
-        completed: true
-      });
-
-      if (user?.email) {
-        const progressList = await UserProgress.filter({ user_email: user.email });
-        if (progressList.length > 0) {
-          const progress = progressList[0];
-          const newTotalPoints = (progress.total_points || 0) + totalPoints;
-          const newLevel = Math.floor(newTotalPoints / 100) + 1;
-          let newBadges = [...(progress.badges || [])];
-
-          if (totalEmissions < 20 && !newBadges.includes("eco-champion")) {
-            newBadges.push("eco-champion");
-          }
-          if (!newBadges.includes("first-game") && newTotalPoints >= 10) {
-            newBadges.push("first-game");
-          }
-
-          await UserProgress.update(progress.id, {
-            total_points: newTotalPoints,
-            level: newLevel,
-            badges: newBadges,
-            completed_games: [...(progress.completed_games || []), "carbon-calculator"]
-          });
-        }
-      }
-
+      const session = await api.createGameSession("CARBON_CALCULATOR");
+      await api.completeGameSession(session.id, totalPoints, "COMPLETED");
       setGameOverData({
         score: totalPoints,
         emissions: totalEmissions,
         choices: choices,
         category: getEmissionCategory(totalEmissions)
       });
-      
     } catch (error) {
       console.error('Error saving game results:', error);
+      setGameOverData({
+        score: totalPoints,
+        emissions: totalEmissions,
+        choices: choices,
+        category: getEmissionCategory(totalEmissions)
+      });
     }
-  }, [user, choices, totalPoints, totalEmissions]);
+  }, [choices, totalPoints, totalEmissions]);
 
   useEffect(() => {
     if (gameState === 'results') {
@@ -137,14 +103,14 @@ export default function CarbonCalculator() {
               Back to Games
             </Button>
           </Link>
-          
+
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 justify-center">
               <Calculator className="w-7 h-7 text-blue-600" />
               Carbon Footprint Quest
             </h1>
           </div>
-          
+
           <div className="text-right">
             <Badge variant="outline" className="text-lg px-4 py-2">
               <Leaf className="w-5 h-5 mr-2" />
