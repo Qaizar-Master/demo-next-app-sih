@@ -9,6 +9,7 @@ import prisma from "@/lib/prisma";
 import { withAuth, ok, err } from "@/lib/api-helpers";
 
 export const dynamic = "force-dynamic";
+export function generateStaticParams() { return []; }
 
 export const PATCH = withAuth(async (req, { params }, userId) => {
     const { id } = await params;
