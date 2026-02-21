@@ -13,6 +13,8 @@ import { randomBytes } from "crypto";
 import prisma from "@/lib/prisma";
 import { withAuth, ok, err } from "@/lib/api-helpers";
 
+export const dynamic = "force-dynamic";
+
 export const PATCH = withAuth(async (req, { params }, userId) => {
     const { id } = await params;
     const { status, adminNote } = await req.json();

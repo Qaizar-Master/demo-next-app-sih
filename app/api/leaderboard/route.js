@@ -11,6 +11,8 @@
 import prisma from "@/lib/prisma";
 import { withAuth, ok } from "@/lib/api-helpers";
 
+export const dynamic = "force-dynamic";
+
 export const GET = withAuth(async (req, ctx, userId) => {
     const { searchParams } = new URL(req.url);
     const period = searchParams.get("period") ?? "global";

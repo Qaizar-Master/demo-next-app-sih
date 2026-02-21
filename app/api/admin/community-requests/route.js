@@ -8,6 +8,8 @@
 import prisma from "@/lib/prisma";
 import { withAuth, ok, err } from "@/lib/api-helpers";
 
+export const dynamic = "force-dynamic";
+
 export const GET = withAuth(async (req, ctx, userId) => {
     const admin = await prisma.profile.findUnique({ where: { id: userId } });
     if (!admin?.isAdmin) return err("Forbidden", 403);

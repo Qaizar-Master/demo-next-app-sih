@@ -8,6 +8,8 @@
 import prisma from "@/lib/prisma";
 import { withAuth, ok, err } from "@/lib/api-helpers";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/game-sessions?limit=10
 export const GET = withAuth(async (req, ctx, userId) => {
     const { searchParams } = new URL(req.url);

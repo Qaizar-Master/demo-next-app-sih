@@ -8,6 +8,8 @@
 import prisma from "@/lib/prisma";
 import { withAuth, ok, err } from "@/lib/api-helpers";
 
+export const dynamic = "force-dynamic";
+
 const MIN_POINTS_REQUIRED = 500;
 
 // GET /api/communities?search=...

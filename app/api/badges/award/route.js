@@ -8,6 +8,8 @@
 import prisma from "@/lib/prisma";
 import { withAuth, ok, err } from "@/lib/api-helpers";
 
+export const dynamic = "force-dynamic";
+
 export const POST = withAuth(async (req, ctx, userId) => {
     const { badgeId } = await req.json();
     if (!badgeId) return err("badgeId is required");

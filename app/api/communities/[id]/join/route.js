@@ -8,6 +8,8 @@
 import prisma from "@/lib/prisma";
 import { withAuth, ok, err } from "@/lib/api-helpers";
 
+export const dynamic = "force-dynamic";
+
 // POST /api/communities/[id]/join  (body: { joinCode })
 export const POST = withAuth(async (req, { params }, userId) => {
     const { joinCode } = await req.json();

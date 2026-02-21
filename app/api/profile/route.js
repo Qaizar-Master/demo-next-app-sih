@@ -10,6 +10,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { withAuth, ok, err } from "@/lib/api-helpers";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/profile
 export const GET = withAuth(async (req, ctx, userId) => {
     const profile = await prisma.profile.findUnique({

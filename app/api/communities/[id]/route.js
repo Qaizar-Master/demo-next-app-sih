@@ -9,6 +9,8 @@
 import prisma from "@/lib/prisma";
 import { withAuth, ok, err } from "@/lib/api-helpers";
 
+export const dynamic = "force-dynamic";
+
 export const GET = withAuth(async (req, { params }, userId) => {
     const { id } = await params;
 

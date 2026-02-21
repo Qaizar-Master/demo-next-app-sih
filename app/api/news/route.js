@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 // Maps our category IDs to search keywords for GNews
 // "all" uses multiple keywords fetched separately and merged
 const allKeywords = ["renewable energy", "climate change", "biodiversity"];

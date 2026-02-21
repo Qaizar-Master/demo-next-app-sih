@@ -9,6 +9,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { withAuth, ok, err } from "@/lib/api-helpers";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/challenges
 export const GET = withAuth(async (req, ctx, userId) => {
     const [challenges, userProgress] = await Promise.all([
