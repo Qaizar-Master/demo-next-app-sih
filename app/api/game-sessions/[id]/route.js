@@ -17,14 +17,26 @@ export const PATCH = withAuth(async (req, { params }, userId) => {
     if (!session) return err("Session not found", 404);
     if (session.userId !== userId) return err("Forbidden", 403);
 
-    const updated = await prisma.gameSession.update({
-        where: { id },
-        data: {
-            status: status ?? session.status,
-            score: score ?? session.score,
-            progress: progress ?? session.progress,
-            completedAt: status === "COMPLETED" ? new Date() : session.completedAt,
-        },
+    const updated = await prisma.$transaction(async (tx) => {
+        const u = await tx.gameSession.update({
+            where: { id },
+            data: {
+                status: status ?? session.status,
+                score: score ?? session.score,
+                progress: progress ?? session.progress,
+                completedAt: (status === "COMPLETED" || (status === undefined && session.status === "COMPLETED")) ? new Date() : session.completedAt,
+            },
+        });
+
+        // If newly completed with a score, or score updated on a completed session
+        if (status === "COMPLETED" && score > 0) {
+            await tx.profile.update({
+                where: { id: userId },
+                data: { totalPoints: { increment: score } }
+            });
+        }
+
+        return u;
     });
 
     return ok(updated);

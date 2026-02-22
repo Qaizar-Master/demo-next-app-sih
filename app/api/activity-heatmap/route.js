@@ -33,17 +33,21 @@ export const GET = withAuth(async (req, ctx, userId) => {
         }),
     ]);
 
-    // Aggregate into { "YYYY-MM-DD": totalPoints }
     const map = {};
 
-    const addToDay = (date, pts) => {
-        if (!pts || pts <= 0) return;
-        const key = date.toISOString().slice(0, 10); // "YYYY-MM-DD"
-        map[key] = (map[key] ?? 0) + pts;
-    };
+    sessions.forEach((s) => {
+        const date = new Date(s.createdAt);
+        // Use local date format YYYY-MM-DD instead of UTC to match frontend
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        map[key] = (map[key] ?? 0) + (s.score ?? 0);
+    });
 
-    sessions.forEach((s) => addToDay(new Date(s.createdAt), s.score ?? 0));
-    actions.forEach((a) => a.reviewedAt && addToDay(new Date(a.reviewedAt), a.pointsAwarded ?? 0));
+    actions.forEach((a) => {
+        if (!a.reviewedAt) return;
+        const date = new Date(a.reviewedAt);
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        map[key] = (map[key] ?? 0) + (a.pointsAwarded ?? 0);
+    });
 
-    return ok(map);
+    return ok({ data: map });
 });
